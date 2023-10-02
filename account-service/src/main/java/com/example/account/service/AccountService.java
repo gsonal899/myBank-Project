@@ -11,6 +11,7 @@ public interface AccountService
     public AccountDto fetchAccountDetailsByCustomerId(int customerId);
     
     public APIResponseDto fetchAccountAndCardDetailsByCustomerId(int customerId);
+    public APIResponseDto fetchAccountCardAndBalanceDetailsByCustomerId(int customerId);
     
     public AccountDto create(AccountDto accountDto);
     

@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.account.dto.APIResponseDto;
 import com.example.account.dto.AccountDto;
+import com.example.account.dto.BalanceDto;
 import com.example.account.dto.CardDto;
 import com.example.account.entity.Account;
 import com.example.account.exception.AccountAlreadyExistsException;
@@ -23,8 +24,8 @@ public class AccountServiceimpl implements AccountService
 {
 	private AccountRepository  accountRepository;
 	
-	//private WebClient webClient;
-	  private APIClient apiClient;
+	private WebClient webClient;
+	//  private APIClient apiClient;
 	
 	@Override
 	public List<AccountDto> fetchAllAccountDetails()
@@ -62,22 +63,61 @@ public class AccountServiceimpl implements AccountService
         	
         AccountDto accountDto=AccountMapper.mapToAccountDto(account);
         
-        /*CardDto[] cardDto=webClient.get()
+        CardDto[] cardDto=webClient.get()
                  .uri("http://localhost:8083/myBank/fetch/"+accountDto.getMobileNo())
                  .retrieve()
                  .bodyToMono(CardDto[].class)
-                 .block();*/
+                 .block();
         
-        List<CardDto> cardDto=apiClient.fetchAllCardDetailsByMobileNumber(accountDto.getMobileNo());
-                 
-        APIResponseDto apiResponseDto=new APIResponseDto(accountDto,cardDto);
-       // apiResponseDto.setAccountDto(accountDto);
-      //  apiResponseDto.setCardDto(cardDto);
+      //  List<CardDto> cardDto=apiClient.fetchAllCardDetailsByMobileNumber(accountDto.getMobileNo());
+        
+        
+        APIResponseDto apiResponseDto=new APIResponseDto();
+         apiResponseDto.setAccountDto(accountDto);
+         apiResponseDto.setCardDto(cardDto);
         
 		return apiResponseDto;
         }
 	}
-
+	@Override
+	public APIResponseDto fetchAccountCardAndBalanceDetailsByCustomerId(int customerId)
+	{
+		Account account=accountRepository.findAccountByCustomerId(customerId);
+        if(account==null)
+        {
+        	throw new AccountNotFoundException("Account","Customer-Id",customerId);
+        }
+        else
+        {
+        	
+        AccountDto accountDto=AccountMapper.mapToAccountDto(account);
+        
+        CardDto[] cardDto=webClient.get()
+                 .uri("http://localhost:8083/myBank/fetch/"+accountDto.getMobileNo())
+                 .retrieve()
+                 .bodyToMono(CardDto[].class)
+                 .block();
+        
+       BalanceDto balanceDto=webClient.get()
+                .uri("http://localhost:8085/myBank/checkBalance/"+accountDto.getCustomerId())
+                .retrieve()
+                .bodyToMono(BalanceDto.class)
+                .block();
+       
+       //  List<CardDto> cardDto=apiClient.fetchAllCardDetailsByMobileNumber(accountDto.getMobileNo());
+       //  BalanceDto balanceDto=apiClient.fetchBalanceByCustomerId(accountDto.getCustomerId());
+         
+         
+         APIResponseDto apiResponseDto=new APIResponseDto(accountDto,cardDto,balanceDto);
+          // apiResponseDto.setAccountDto(accountDto);
+         // apiResponseDto.setCardDto(cardDto);
+         // apiResponseDto.setbalanceDto(balanceDto);
+         
+         
+ 		return apiResponseDto;
+        }
+		
+	}
 	@Override
 	public AccountDto create(AccountDto obj)
 	{
@@ -131,5 +171,7 @@ public class AccountServiceimpl implements AccountService
 		}
 		return true;
 	}
+
+	
 
 }

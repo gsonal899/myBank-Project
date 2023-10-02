@@ -55,6 +55,14 @@ public class AccountController
     	
     }
 	
+	@GetMapping("/fetch/details/{customerId}")
+    public ResponseEntity<APIResponseDto> fetchAccountCardAndBalanceByCustomerId(@PathVariable int customerId)
+    {
+		APIResponseDto apiResponseDto=accountService.fetchAccountCardAndBalanceDetailsByCustomerId(customerId);
+		return ResponseEntity.status(HttpStatus.OK).body(apiResponseDto);
+    	
+    }
+	
 	@PostMapping("/createAccount")
     public ResponseEntity<AccountDto> createNewAccount(@RequestBody AccountDto obj)
     {
